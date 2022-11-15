@@ -1,0 +1,64 @@
+<script>
+var fields = [ '{{ fields }}' ];
+
+$(document).ready(function() {
+    var language_ids = '{{ language_ids }}';
+    
+    language_ids = language_ids.split('_');
+    
+    // Each fields
+    $.each(fields, function(key, field) {
+        // Each languages
+        $.each(language_ids, function(key1, language_id) {
+            var html = '<a class="auto-translate" data-current="' + field.replace('@', language_id) + '" data-default="' + field.replace('@', {{ default_id }}) + '" data-to="' + language_id + '">Translate</a>';
+
+            $('[name*=\'' + field.replace('@', language_id) + '\']').after(html);
+        });
+    });
+
+    $('.auto-translate').on('click', function() {
+        var element = $(this);
+        
+        var text = $('[name*=\'' + element.attr('data-default') + '\']').val();
+        
+        var default_element = $('[name*=\'' + element.attr('data-default') + '\']').attr('id');
+        
+        if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances[$('[name*=\'' + element.attr('data-default') + '\']').attr('id')]) {
+            text = CKEDITOR.instances[$('[name*=\'' + element.attr('data-default') + '\']').attr('id')].getData();
+        } else if (typeof $('#' + default_element).attr('data-toggle') !== 'undefined' && $('#' + default_element).attr('data-toggle') == 'summernote') {
+            text = $('#' + default_element).summernote('code');
+        }
+
+        $.ajax({
+            url: '{{ url }}',
+            type: 'post',
+            data: {to: element.attr('data-to'), text: text},
+            dataType: 'json',
+            beforeSend: function() {
+                element.html('Translating...');
+            },
+            success: function(json) {
+                element.html('Translate');
+                console.log('[name*=\'' + element.attr('data-current') + '\']');
+                if (json['text']) {
+                    var current_element = $('[name*=\'' + element.attr('data-current') + '\']').attr('id');
+                    
+                    if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances[$('[name*=\'' + element.attr('data-current') + '\']').attr('id')]) {
+                        CKEDITOR.instances[$('[name*=\'' + element.attr('data-current') + '\']').attr('id')].setData(json['text']);
+                    } else if (typeof $('#' + current_element).attr('data-toggle') !== 'undefined' && $('#' + current_element).attr('data-toggle') == 'summernote') {
+                        $('#' + current_element).summernote('code', json['text']);
+                    }
+                    $('[name*=\'' + element.attr('data-current') + '\']').val(json['text']);
+                } else {
+                    alert('No translation available');
+                }
+            },
+            error: function(xhr, ajaxOptions, thrownError) {
+                alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+            }
+        });
+        
+        return false;
+    });
+});
+</script>

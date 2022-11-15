@@ -1,0 +1,73 @@
+<select id="from_lang" class="form-control">
+    {% for language in languages %}
+    <option data-lang="{{ language.language_id }}" value="{{ auto_content_translator_google_codes[language.language_id] }}">{{ language.name }}</option>
+    {% endfor %}
+</select>
+<i class="fa fa-arrow-right" aria-hidden="true"></i>
+<select id="to_lang" class="form-control">
+    {% for language in languages %}
+    <option data-lang="{{ language.language_id }}" value="{{ auto_content_translator_google_codes[language.language_id] }}">{{ language.name }}</option>
+    {% endfor %}
+</select>
+<button id="translate_option" data-toggle="tooltip" title="{{ text_translate }}" class="btn btn-warning"><i class="fa fa-globe" aria-hidden="true"></i></button>
+<script>
+
+$(document).on('click', '#translate_option', function() {
+  if(!confirm("Are you sure?")) {
+    return;
+  }
+  var for_translate = 'option';
+  var values = [];
+  var to_values = [];
+  var from_lang_id = $('#from_lang').children("option:selected").attr('data-lang');
+  var to_lang_id = $('#to_lang').children("option:selected").attr('data-lang');
+
+  var from_lang_code = $('#from_lang').children("option:selected").val();
+  var to_lang_code = $('#to_lang').children("option:selected").val();
+
+  var name = $(`[name="option_description[${from_lang_id }][name]"]`).val();
+  for (var i = 0; i < {{ max_option }}; i++) {
+    values.push($(`[name="option_value[${i}][option_value_description][${from_lang_id }][name]"]`).val());
+  }
+
+  var to_name = $(`[name="option_description[${to_lang_id }][name]"]`).val();
+
+  var to_lang = {
+    "name": to_name
+    }
+
+    $.ajax({
+        type: 'post',
+        url: "{{ url }}",
+        data: {
+          for_translate: for_translate,
+          from_lang_code: from_lang_code,
+          name: name,
+          values: values,
+          to_lang_code: to_lang_code,
+          to_lang: to_lang,
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#form-post').fadeTo('slow', 0.5);
+        },
+        complete: function() {
+            $('#form-post').fadeTo('slow', 1);
+        },
+        success: function(json) {
+            if(json['name']) {
+                $(`[name="option_description[${to_lang_id }][name]"]`).val(json['name']);
+            }
+
+            if(json['values']) {
+                  for (var i = 0; i < {{ max_option }}; i++) {
+                    $(`[name="option_value[${i }][option_value_description][${to_lang_id }][name]"]`).val(json['values'][i]);
+                }
+            }
+        },
+        error: function(json) {
+            console.log(json);
+        }
+    });
+});
+</script>

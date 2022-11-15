@@ -1,0 +1,106 @@
+<select id="from_lang" class="form-control">
+    {% for language in languages %}
+    <option data-lang="{{ language.language_id }}" value="{{ auto_content_translator_google_codes[language.language_id] }}">{{ language.name }}</option>
+    {% endfor %}
+</select>
+<i class="fa fa-arrow-right" aria-hidden="true"></i>
+<select id="to_lang" class="form-control">
+    {% for language in languages %}
+    <option data-lang="{{ language.language_id }}" value="{{ auto_content_translator_google_codes[language.language_id] }}">{{ language.name }}</option>
+    {% endfor %}
+</select>
+<button id="translate_information" data-toggle="tooltip" title="Translate" class="btn btn-warning"><i class="fa fa-globe" aria-hidden="true"></i></button>
+<script>
+
+$(document).on('click', '#translate_information', function() {
+  if(!confirm("Are you sure?")) {
+    return;
+  }
+  var for_translate = 'information';
+  var from_lang_id = $('#from_lang').children("option:selected").attr('data-lang');
+  var to_lang_id = $('#to_lang').children("option:selected").attr('data-lang');
+
+  var from_lang_code = $('#from_lang').children("option:selected").val();
+  var to_lang_code = $('#to_lang').children("option:selected").val();
+
+  var title = $(`#input-title-${from_lang_id }`).val();
+  var description = $(`[name*="information_description[${from_lang_id}][description]`).val();
+  var meta_title = $(`#input-meta-title-${from_lang_id }`).val();
+  var meta_description = $(`#input-meta-description-${from_lang_id }`).val();
+  var meta_keyword = $(`#input-meta-keyword-${from_lang_id }`).val();
+
+  var to_title = $(`#input-title-${to_lang_id }`).val();
+  var to_description = $(`[name*="information_description[${to_lang_id}][description]`).val();
+  var to_meta_title = $(`#input-meta-title-${to_lang_id }`).val();
+  var to_meta_description = $(`#input-meta-description-${to_lang_id }`).val();
+  var to_meta_keyword = $(`#input-meta-keyword-${to_lang_id }`).val();
+console.log(to_description)
+  var to_lang = {
+    "title": to_title, 
+    "description": to_description,
+    "meta_title": to_meta_title,
+    "meta_description": to_meta_description,
+    "meta_keyword": to_meta_keyword,
+    }
+
+    $.ajax({
+        type: 'post',
+        url: "{{ url }}",
+        data: {
+          for_translate: for_translate,
+          from_lang_code: from_lang_code,
+          to_lang_code: to_lang_code,
+          title: title,
+          description: description,
+          meta_title: meta_title,
+          meta_description: meta_description,
+          meta_keyword: meta_keyword,
+          to_lang: to_lang
+        },
+        dataType: 'json',
+        beforeSend: function() {
+            $('#form-information').fadeTo('slow', 0.5);
+        },
+        complete: function() {
+            $('#form-information').fadeTo('slow', 1);
+        },
+        success: function(json) {
+            if(json['title']) {
+                $(`#input-title-${to_lang_id}`).val(json['title']);
+            }
+
+            if (json['description']) {
+              console.log(json['description'])
+                var current_element = $(`[name*="information_description[${to_lang_id}][description]"]`).attr('id');
+                console.log(current_element)
+                if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances[$(`[name*="information_description[${to_lang_id}][description]"]`).attr('id')]) {
+                    CKEDITOR.instances[$(`[name*="information_description[${to_lang_id}][description]"]`).attr('id')].setData(json['description']);
+                } else if (typeof $('#' + current_element).attr('data-toggle') !== 'undefined' && $('#' + current_element).attr('data-toggle') == 'summernote') {
+                    $('#' + current_element).summernote('code', json['description']);
+                }
+                
+                $(`[name*="information_description[${to_lang_id}][description]"]`).val(json['description']);
+            } 
+
+            if(json['meta_title']) {
+                $(`#input-meta-title-${to_lang_id}`).val(json['meta_title']);
+            }
+
+            if(json['meta_description']) {
+                $(`#input-meta-description-${to_lang_id}`).val(json['meta_description']);
+            }
+
+            if(json['meta_keyword']) {
+                $(`#input-meta-keyword-${to_lang_id}`).val(json['meta_keyword']);
+            }
+
+            if(json['error']) {
+              $('.page-header .container-fluid').append('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error'] + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+            }
+        },
+        error: function(json) {
+            console.log(json);
+        }
+    });
+});
+</script>

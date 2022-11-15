@@ -1,0 +1,372 @@
+{{ header }} {{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="form-inline float-end">
+        <button type="submit" form="form-module" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-light"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{heading_title_main}}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+          <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+  <div class="alert alert-info alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ text_find_codes }}</div>
+    {% if error.warning %}
+      <div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i> {{ error.warning }}
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success"><i class="fa fa-exclamation-circle"></i> {{ success }}
+        <button type="button" class="btn-close float-end" data-bs-dismiss="alert"></button>
+      </div>
+    {% endif %}
+    <div class="card card-default">
+      <div class="card-header">
+        <h5 class="panel-title"><i class="fas fa-pencil-alt"></i> {{ text_edit }}</h5>
+      </div>
+      {% if setup %}
+        <div class="card-body">
+          <nav>
+            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+              <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true"><span class="fa fa-cog"></span>{{ tab_translate_fields }}</button>
+              <button class="nav-link" id="tab_mass_translate-tab" data-bs-toggle="tab" data-bs-target="#tab_mass_translate" type="button" role="tab" aria-controls="tab_mass_translate" aria-selected="false"><span class="fa fa-paint-brush"></span>{{ tab_mass_translate }}</button>
+            </div>
+          </nav>
+          <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+            <!-- tab1 start -->
+              <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-module" class="form-horizontal">
+                <div class="form-group row">
+                  <label class="col-sm-2 col-form-label" for="input_status">{{ entry_status }}</label>
+                  <div class="col-sm-10">
+                    <input type="hidden" name="{{ codename }}_status" value="0"/>
+                    <input type="hidden" name="{{ codename }}_setup" value="1" />
+                    <input type="checkbox" name="{{ codename }}_status" class="switcher" id="input_status" {{ status ? 'checked="checked"' : '' }} value="1"/>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-sm-2 col-form-label" for="field_empty">{{ entry_field_empty }}</label>
+                  <div class="col-sm-10">
+                    <input type="checkbox" name="{{ codename }}_field_empty" class="switcher" id="field_empty" {{ field_empty ? 'checked="checked"' : '' }} value="1"/>                    
+                  </div>
+                </div>
+                <div class="form-group row required">
+                  <label class="col-sm-2 col-form-label" for="input-key">{{ entry_key }}</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="{{ codename }}_key" value="{{ auto_content_translator_key }}" placeholder="{{ entry_key }}" id="input-key" class="form-control" />
+                    {% if error_key %}
+                      <div class="text-danger">{{ error_key }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+                {% for language in languages %}
+                <div class="form-group row">
+                  <label class="col-sm-2 col-form-label" for="input-name">{{ language.name }}</label>
+                  <div class="col-sm-10">
+                    <select name="{{ codename }}_google_codes[{{ language.language_id }}]" class="form-control">
+                      {% for google_code in google_codes %}
+                      <option value="{{ google_code }}" {% if google_code == auto_content_translator_google_codes[language.language_id] %} selected {% endif %}>{{ google_code }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                {% endfor %}
+                <div class="form-group row required">
+                  <label class="col-sm-2 col-form-label" for="input-name">{{ entry_product }}</label>
+                  <div class="col-sm-10">
+                    {% for key, product_field in auto_content_translator_translation_fields.product %}
+                      <label class="checkbox-inline">
+                        <input type="hidden" name="{{ codename }}_translation_fields[product][{{ key }}][enabled]" value="0" />
+                        <input name="{{ codename }}_translation_fields[product][{{ key }}][enabled]" type="checkbox" {% if product_field.enabled %} checked value="1" {% endif %} > {{ product_field.title }}
+                        <input type="hidden" name="{{ codename }}_translation_fields[product][{{ key }}][title]" value="{{ product_field.title }}" />
+                      </label>
+                    {% endfor %}
+                  </div>
+                </div>
+                <div class="form-group row required">
+                  <label class="col-sm-2 col-form-label" for="input-name">{{ entry_blog_post }}</label>
+                  <div class="col-sm-10">
+                    {% for key, blog_post_field in auto_content_translator_translation_fields.blog_post %}
+                      <label class="checkbox-inline">
+                        <input type="hidden" name="{{ codename }}_translation_fields[blog_post][{{ key }}][enabled]" value="0" />
+                        <input name="{{ codename }}_translation_fields[blog_post][{{ key }}][enabled]" type="checkbox" {% if blog_post_field.enabled %} checked value="1" {% endif %} > {{ blog_post_field.title }}
+                        <input type="hidden" name="{{ codename }}_translation_fields[blog_post][{{ key }}][title]" value="{{ blog_post_field.title }}" />
+                      </label>
+                    {% endfor %}
+                  </div>
+                </div> 
+                <div class="form-group row required">
+                  <label class="col-sm-2 col-form-label" for="input-name">{{ entry_category }}</label>
+                  <div class="col-sm-10">
+                    {% for key, category_field in auto_content_translator_translation_fields.category %}
+                      <label class="checkbox-inline">
+                        <input type="hidden" name="{{ codename }}_translation_fields[category][{{ key }}][enabled]" value="0" />
+                        <input name="{{ codename }}_translation_fields[category][{{ key }}][enabled]" type="checkbox" {% if category_field.enabled %} checked value="1" {% endif %} > {{ category_field.title }}
+                        <input type="hidden" name="{{ codename }}_translation_fields[category][{{ key }}][title]" value="{{ category_field.title }}" />
+                      </label>
+                    {% endfor %}
+                  </div>
+                </div> 
+                <div class="form-group row required">
+                  <label class="col-sm-2 col-form-label" for="input-name">{{ entry_information }}</label>
+                  <div class="col-sm-10">
+                    {% for key, information_field in auto_content_translator_translation_fields.information %}
+                      <label class="checkbox-inline">
+                        <input type="hidden" name="{{ codename }}_translation_fields[information][{{ key }}][enabled]" value="0" />
+                        <input name="{{ codename }}_translation_fields[information][{{ key }}][enabled]" type="checkbox" {% if information_field.enabled %} checked value="1" {% endif %} > {{ information_field.title }}
+                        <input type="hidden" name="{{ codename }}_translation_fields[information][{{ key }}][title]" value="{{ information_field.title }}" />
+                      </label>
+                    {% endfor %}
+                  </div>
+                </div> 
+                <div class="form-group row required">
+                  <label class="col-sm-2 col-form-label" for="input-name">{{ entry_option }}</label>
+                  <div class="col-sm-10">
+                    {% for key, option_field in auto_content_translator_translation_fields.option %}
+                      <label class="checkbox-inline">
+                        <input type="hidden" name="{{ codename }}_translation_fields[option][{{ key }}][enabled]" value="0" />
+                        <input name="{{ codename }}_translation_fields[option][{{ key }}][enabled]" type="checkbox" {% if option_field.enabled %} checked value="1" {% endif %} > {{ option_field.title }}
+                        <input type="hidden" name="{{ codename }}_translation_fields[option][{{ key }}][title]" value="{{ option_field.title }}" />
+                      </label>
+                    {% endfor %}
+                  </div>
+                </div>
+                <div class="form-group row required">
+                  <label class="col-sm-2 col-form-label" for="input-name">{{ entry_attribute }}</label>
+                  <div class="col-sm-10">
+                    {% for key, attribute_field in auto_content_translator_translation_fields.attribute %}
+                      <label class="checkbox-inline">
+                        <input type="hidden" name="{{ codename }}_translation_fields[attribute][{{ key }}][enabled]" value="0" />
+                        <input name="{{ codename }}_translation_fields[attribute][{{ key }}][enabled]" type="checkbox" {% if attribute_field.enabled %} checked value="1" {% endif %} > {{ attribute_field.title }}
+                        <input type="hidden" name="{{ codename }}_translation_fields[attribute][{{ key }}][title]" value="{{ attribute_field.title }}" />
+                      </label>
+                    {% endfor %}
+                  </div>
+                </div>
+                <div class="form-group row required">
+                  <label class="col-sm-2 col-form-label" for="input-name">{{ entry_attribute_group }}</label>
+                  <div class="col-sm-10">
+                    {% for key, attribute_group_field in auto_content_translator_translation_fields.attribute_group %}
+                      <label class="checkbox-inline">
+                        <input type="hidden" name="{{ codename }}_translation_fields[attribute_group][{{ key }}][enabled]" value="0" />
+                        <input name="{{ codename }}_translation_fields[attribute_group][{{ key }}][enabled]" type="checkbox" {% if attribute_group_field.enabled %} checked value="1" {% endif %} > {{ attribute_group_field.title }}
+                        <input type="hidden" name="{{ codename }}_translation_fields[attribute_group][{{ key }}][title]" value="{{ attribute_group_field.title }}" />
+                      </label>
+                    {% endfor %}
+                  </div>
+                </div>
+                <div class="form-group row required">
+                  <label class="col-sm-2 col-form-label" for="input-name">{{ entry_download }}</label>
+                  <div class="col-sm-10">
+                    {% for key, download_field in auto_content_translator_translation_fields.download %}
+                      <label class="checkbox-inline">
+                        <input type="hidden" name="{{ codename }}_translation_fields[download][{{ key }}][enabled]" value="0" />
+                        <input name="{{ codename }}_translation_fields[download][{{ key }}][enabled]" type="checkbox" {% if download_field.enabled %} checked value="1" {% endif %} > {{ download_field.title }}
+                        <input type="hidden" name="{{ codename }}_translation_fields[download][{{ key }}][title]" value="{{ download_field.title }}" />
+                      </label>
+                    {% endfor %}
+                  </div>
+                </div>
+                <div class="form-group row required">
+                  <label class="col-sm-2 col-form-label" for="input-name">{{ entry_filter }}</label>
+                  <div class="col-sm-10">
+                    {% for key, filters_field in auto_content_translator_translation_fields.filter %}
+                      <label class="checkbox-inline">
+                        <input type="hidden" name="{{ codename }}_translation_fields[filter][{{ key }}][enabled]" value="0" />
+                        <input name="{{ codename }}_translation_fields[filter][{{ key }}][enabled]" type="checkbox" {% if filters_field.enabled %} checked value="1" {% endif %} > {{ filters_field.title }}
+                        <input type="hidden" name="{{ codename }}_translation_fields[filter][{{ key }}][title]" value="{{ filters_field.title }}" />
+                      </label>
+                    {% endfor %}
+                  </div>
+                </div>
+                <div class="form-group row required">
+                  <label class="col-sm-2 col-form-label" for="input-name">{{ entry_recurring }}</label>
+                  <div class="col-sm-10">
+                    {% for key, recurring_field in auto_content_translator_translation_fields.recurring %}
+                      <label class="checkbox-inline">
+                        <input type="hidden" name="{{ codename }}_translation_fields[recurring][{{ key }}][enabled]" value="0" />
+                        <input name="{{ codename }}_translation_fields[recurring][{{ key }}][enabled]" type="checkbox" {% if recurring_field.enabled %} checked value="1" {% endif %} > {{ recurring_field.title }}
+                        <input type="hidden" name="{{ codename }}_translation_fields[recurring][{{ key }}][title]" value="{{ recurring_field.title }}" />
+                      </label>
+                    {% endfor %}
+                  </div>
+                </div>
+              </form>
+            <!-- tab1 end -->
+            </div>
+            <div class="tab-pane fade" id="tab_mass_translate" role="tabpanel" aria-labelledby="tab_mass_translate-tab">
+            <!-- tab2 start -->
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="select-source-language-id">{{ entry_source_language }}</label>
+                <div class="col-sm-10">
+                  <select name="source_language_id" id="select-source-language-id" class="form-control">
+                      {% for language in languages %}
+                      <option value="{{ language.language_id }}">{{ language.name }}</option>
+                      {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="form-group row">
+                  <label class="col-sm-2 col-form-label" for="select-target-language-id">{{ entry_target_language }}</label>
+                  <div class="col-sm-10">
+                    <select name="target_language_id" id="select-target-language-id" class="form-control">
+                        {% for language in languages %}
+                        <option value="{{ language.language_id }}">{{ language.name }}</option>
+                        {% endfor %}
+                      </select>
+                  </div>
+              </div>
+              <div class="form-group row">
+                  <label class="col-sm-2 col-form-label" for="select-type">{{ entry_type }}</label>
+                  <div class="col-sm-10">
+                    <select name="type" id="select-type" class="form-control">
+                        {% for type in types %}
+                        <option value="{{ type }}">{{ type }}</option>
+                        {% endfor %}
+                      </select>
+                  </div>
+              </div>
+              <div class="form-group row">
+                  <label class="col-sm-2 col-form-label" for="input-start">{{ entry_start }}</label>
+                  <div class="col-sm-10">
+                    <input type="text" name="start_from_id" id="input-start" value="0" class="form-control"/>
+                  </div>
+              </div>
+              <div class="form-group row">
+                  <label class="col-sm-2 col-form-label" for="input-start">{{ text_action }}</label>
+                  <div class="col-sm-10">
+                    <a id="button-translate" class="btn btn-primary text-white">{{ button_translate }}</a>
+                  </div>
+              </div>
+              <div id="translate_error"></div>
+                <div class="row">
+                  <div class="col-sm-12"><br/><br/>
+                    <div id="translate-logs" style="height:200px;overflow:auto;background:#eeeeee;padding:10px;"></div>
+                  </div>
+                </div>
+              </div>
+            <!-- tab2 end -->
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="welcome">
+          <div class="welcome-into">
+          <div class="welcome-into-logo">
+              <img id="crezco_img"src= "{{ icon_image }}"/>
+          </div>
+          <div class="welcome-into-heading">{{ heading_title_main }}</div>
+          <div class="welcome-into-start">
+              <a class="btn btn-primary btn-lg setup">{{ text_setup }}</a>
+          </div>
+        </div>
+      {% endif %}
+  </div>
+</div>
+<style>
+.form-group{
+  padding: 10px;
+}
+.welcome{
+		background: url("{{ background_image }}");
+		background-position: bottom;
+		background-repeat: repeat-x;
+		background-size: 50%;
+		min-height: 700px;
+		padding-top: 50px;
+		padding-bottom: 125px;
+}
+.welcome-into{
+    text-align: center;
+    max-width: 500px;
+    margin: auto;
+}
+.welcome-into-logo{
+    padding-bottom: 15px;
+}
+.welcome-into-heading{
+    font-size: 30px;
+    font-weight: bold;
+    padding-bottom: 15px;
+}
+.welcome-into-text{
+    font-size: 18px;
+    padding-bottom: 30px;
+}
+.welcome-into-start{
+    padding-top: 40px;
+}
+.welcome-features{
+    padding: 30px;
+}
+.welcome-features-icon{
+    padding: 20px;
+    height: 130px;
+    text-align: center;
+}
+.welcome-features-text{
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+}
+</style>
+<script type="text/javascript">
+$('#button-translate').on('click', function () {
+    if(confirm("Are you sure?")) {
+      $('#translate-logs').append('{{ text_translating }}<br />');
+
+      massTranslate('index.php?route=extension/auto_content_translator/module/auto_content_translator|massTranslate&user_token={{ user_token }}&start=0&start_from_id=' + $('input[name=\'start_from_id\']').val());
+    }
+});
+
+function massTranslate(url) {
+    $.ajax({
+        url: url,
+        type: 'post',
+        data: $('#tab_mass_translate select'),
+        dataType: 'json',
+        beforeSend: function () {
+            $('#button-translate').html('{{ text_translating }}');
+            $('#button-translate').attr('disabled', 'true');
+        },
+        success: function (json) {
+            if(json['error']) {
+              $('#translate_error').html('<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> ' + json['error'] + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+              $('#button-translate').html('{{ button_translate }}');
+              $('#button-translate').removeAttr('disabled');
+              $('#translate-logs').append(json['done']);
+            } else {
+              $('#translate-logs').append(json['logs']);
+
+              if (json['next']) {
+                  massTranslate(json['next']);
+              } else {
+                  $('#button-translate').html('{{ button_translate }}');
+                  $('#button-translate').removeAttr('disabled');
+                  $('#translate-logs').append(json['done']);
+              }
+            }
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+}
+    $(document).on('click', '.setup', function(){
+        window.location.replace("{{setup_link}}");
+    });
+
+    $(".switcher[type='checkbox").bootstrapSwitch({
+    'onColor': 'success',
+    'onText': 'On',
+    'offText': 'Off',
+  });
+
+</script>
+{{ footer }} 

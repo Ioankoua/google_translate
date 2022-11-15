@@ -1,0 +1,24 @@
+.container-fluid .float-end {
+    display: flex;
+    align-items: center;
+}
+
+.container-fluid .float-end > * {
+    margin-right: 5px;
+}
+.auto-translate {
+    padding: 4px;
+    background: #aaaaaa;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 2px;
+    vertical-align: top;
+    margin-left: 2px;
+    display: inline-block;
+    font-weight: bold;
+    cursor: pointer;
+}
+.auto-translate:hover {
+    background: #0099ff;
+    color: #ffffff;
+}
